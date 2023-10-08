@@ -1,13 +1,10 @@
 FLAGS = -Wall -lm
 
-main:   lab1.c funciones.o
-    gcc $(FLAGS) -o lab1 lab1.c funciones.o
+main: lab1.c funciones.o
+	gcc $(FLAGS) -o lab1 lab1.c funciones.o -lm
 
-funciones.o:    funciones.c particula.h
-    gcc -c $(FLAGS) funciones.c
-
-lab1.o: lab1.c particula.h
-    gcc -c $(FLAGS) lab1.c
+funciones.o: funciones.c
+	gcc -c $(FLAGS) funciones.c
 
 clear:
-    rm -f lab1 *.o
+	rm -f lab1 *.o

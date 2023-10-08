@@ -1,8 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
 #include "funciones.h"
-#include "particula.h"
 
 Particulas *Lectura_Particulas(char *NameFile)
 {
