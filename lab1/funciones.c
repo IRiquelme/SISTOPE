@@ -41,39 +41,49 @@ float FormulaYComparacion(int celdas, float energia_Inicial, int posicion_Celda,
 
 void MostrarCeldas(float *array_Celdas, int cantidad_Celdas)
 {
-    int i;
+    int i, j;
     for (i = 0; i < cantidad_Celdas; i++)
     {
-        printf("Celda: %d, Energia: %.6f \n", i, array_Celdas[i]);
+        printf("Celda: %d, Energia: %.6f|", i, array_Celdas[i]);
+        for (j = 0; j < array_Celdas[i] / 100; j++)
+        {
+            printf("o");
+        }
+        printf("\n");
     }
 }
 
-void EscrituraArchivo(float * array_Celdas, int cantidad_Celdas, char * nombreArchivo){
-    FILE * archivo;
-    archivo=fopen(nombreArchivo,"w");
+void EscrituraArchivo(float *array_Celdas, int cantidad_Celdas, char *nombreArchivo)
+{
+    FILE *archivo;
+    archivo = fopen(nombreArchivo, "w");
 
     float EnergiaMax;
     int CeldaMax;
 
-    MaxEnergiaCelda(array_Celdas,cantidad_Celdas,&EnergiaMax,&CeldaMax);
+    MaxEnergiaCelda(array_Celdas, cantidad_Celdas, &EnergiaMax, &CeldaMax);
 
-    fprintf(archivo,"%d %.6f\n",CeldaMax,EnergiaMax);
+    fprintf(archivo, "%d %.6f\n", CeldaMax, EnergiaMax);
 
     int i;
 
-    for(i=0;i<cantidad_Celdas;i++){
-        fprintf(archivo,"%d %.6f\n",i,array_Celdas[i]);
+    for (i = 0; i < cantidad_Celdas; i++)
+    {
+        fprintf(archivo, "%d %.6f\n", i, array_Celdas[i]);
     }
     fclose(archivo);
 }
 
-void MaxEnergiaCelda (float * array_Celdas, int cantidad_Celdas, float *MaxValor, int * posicionMaxValor){
+void MaxEnergiaCelda(float *array_Celdas, int cantidad_Celdas, float *MaxValor, int *posicionMaxValor)
+{
     float max = array_Celdas[0];
     *posicionMaxValor = 0;
 
     int i;
-    for(i=0;i<cantidad_Celdas;i++){
-        if(array_Celdas[i]>max){
+    for (i = 0; i < cantidad_Celdas; i++)
+    {
+        if (array_Celdas[i] > max)
+        {
             max = array_Celdas[i];
             *posicionMaxValor = i;
         }
