@@ -20,13 +20,13 @@ Particulas *Lectura_Particulas(char *NameFile)
     return Array_Particulas;
 }
 
-int FormulaYComparacion(int celdas, float energia_Inicial, int posicion_Celda, float energia_Particula, int posicion_Particula)
+float FormulaYComparacion(int celdas, float energia_Inicial, int posicion_Celda, float energia_Particula, int posicion_Particula)
 {
     float energia_Repartida;
     float min_energia;
 
-    energia_Repartida = (pow(10, 3) * energia_Particula) / (celdas * (sqrt(abs(posicion_Particula - posicion_Celda) + 1)));
-    min_energia = pow(10, -3) / celdas;
+    energia_Repartida = (pow(10.0, 3.0) * energia_Particula) / (celdas * (float)(sqrt(abs(posicion_Particula - posicion_Celda) + 1.0)));
+    min_energia = pow(10.0, -3.0) / celdas;
 
     // Si la energia repartida es mayor a la energia minima, entonces si se le suma a la celda y si no, entonces se retorna la energia inicial
     if (min_energia <= energia_Repartida)
@@ -44,6 +44,39 @@ void MostrarCeldas(float *array_Celdas, int cantidad_Celdas)
     int i;
     for (i = 0; i < cantidad_Celdas; i++)
     {
-        printf("Celda: %d, Energia: %0.6f \n", i, array_Celdas[i]);
+        printf("Celda: %d, Energia: %.6f \n", i, array_Celdas[i]);
     }
+}
+
+void EscrituraArchivo(float * array_Celdas, int cantidad_Celdas, char * nombreArchivo){
+    FILE * archivo;
+    archivo=fopen(nombreArchivo,"w");
+
+    float EnergiaMax;
+    int CeldaMax;
+
+    MaxEnergiaCelda(array_Celdas,cantidad_Celdas,&EnergiaMax,&CeldaMax);
+
+    fprintf(archivo,"%d %.6f\n",CeldaMax,EnergiaMax);
+
+    int i;
+
+    for(i=0;i<cantidad_Celdas;i++){
+        fprintf(archivo,"%d %.6f\n",i,array_Celdas[i]);
+    }
+    fclose(archivo);
+}
+
+void MaxEnergiaCelda (float * array_Celdas, int cantidad_Celdas, float *MaxValor, int * posicionMaxValor){
+    float max = array_Celdas[0];
+    *posicionMaxValor = 0;
+
+    int i;
+    for(i=0;i<cantidad_Celdas;i++){
+        if(array_Celdas[i]>max){
+            max = array_Celdas[i];
+            *posicionMaxValor = i;
+        }
+    }
+    *MaxValor = max;
 }
