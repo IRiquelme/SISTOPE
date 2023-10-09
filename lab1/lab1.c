@@ -71,6 +71,17 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
+    if (fopen(i, "r") == NULL)
+    {
+        printf("El archivo indicado en -i no existe.\n");
+        exit(0);
+    }
+
+    if (fgetc(fopen("archivo.txt", "r")) == EOF)
+    {
+        printf("El archivo indicado en -i está vacío.\n");
+    }
+
     Particulas *Lista_Particulas = Lectura_Particulas(i);
 
     double *Array_Celdas = (double *)calloc(N, sizeof(double)); // Inicializar el array con solo 0
