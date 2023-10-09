@@ -5,7 +5,7 @@ struct Particulas
 {
     int c_Particulas;
     int posicion;
-    float energia;
+    double energia;
 };
 typedef struct Particulas Particulas;
 
