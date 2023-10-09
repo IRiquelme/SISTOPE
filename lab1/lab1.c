@@ -71,16 +71,19 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
-    if (fopen(i, "r") == NULL)
+    FILE *fp = fopen(i, "r");
+    if (fp == NULL)
     {
         printf("El archivo indicado en -i no existe.\n");
         exit(0);
     }
 
-    if (fgetc(fopen("archivo.txt", "r")) == EOF)
+    if (fgetc(fp) == EOF)
     {
         printf("El archivo indicado en -i está vacío.\n");
+        exit(0);
     }
+    fclose(fp);
 
     Particulas *Lista_Particulas = Lectura_Particulas(i);
 
