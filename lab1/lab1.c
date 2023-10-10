@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
             break;
         }
     }
+    // Verificamos si se ingresaron las flags obligatorias
     if (obligatorio_N == 0)
     {
         printf("Se debe ingresar el valor del parametro -N\n");
@@ -70,39 +71,40 @@ int main(int argc, char *argv[])
         printf("Se debe ingresar el valor del parametro -o\n");
         exit(0);
     }
-
+    // Verificacion del archivo de entrada
     FILE *fp = fopen(i, "r");
-    if (fp == NULL)
+    if (fp == NULL) // Verificamos que el archivo exista
     {
         printf("El archivo indicado en -i no existe.\n");
         exit(0);
     }
 
-    if (fgetc(fp) == EOF)
+    if (fgetc(fp) == EOF) // Verificamos que el archivo no este vacio
     {
         printf("El archivo indicado en -i está vacío.\n");
         exit(0);
     }
     fclose(fp);
 
-    Particulas *Lista_Particulas = Lectura_Particulas(i);
+    int cantidad_Particulas;
+    Particula *Lista_Particulas = lecturaParticulas(i, &cantidad_Particulas);
 
     double *Array_Celdas = (double *)calloc(N, sizeof(double)); // Inicializar el array con solo 0
 
     int k;
     int j;
-    for (k = 0; k < Lista_Particulas[0].c_Particulas; k++)
+    for (k = 0; k < cantidad_Particulas; k++)
     {
         for (j = 0; j < N; j++)
         {
-            Array_Celdas[j] = FormulaYComparacion(N, Array_Celdas[j], j, Lista_Particulas[k].energia, Lista_Particulas[k].posicion);
+            Array_Celdas[j] = formulaYComparacion(N, Array_Celdas[j], j, Lista_Particulas[k].energia, Lista_Particulas[k].posicion);
         }
     }
-    EscrituraArchivo(Array_Celdas, N, o);
+    escrituraArchivo(Array_Celdas, N, o);
 
     if (D)
     {
-        MostrarCeldas(Array_Celdas, N);
+        mostrarCeldas(Array_Celdas, N);
     }
 
     return 0;

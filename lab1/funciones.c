@@ -1,21 +1,20 @@
 #include "funciones.h"
 
-// Entradas:
-// Salidas:
-// Descripcion:
-Particulas *Lectura_Particulas(char *NameFile)
+// Entradas: Nombre del archivo de entrada
+// Salidas: Un array de estructuras "Particula", cada estructura contiene la celda de impacto y su energia.
+// Descripcion: Se lee el primer entero y se reserva memoria dimica para un array de estucturas "Particula" con un largo igual al leido.
+//                 Luego mediante un ciclo 'for' se recorre el archivo, guardando cada celda de impacto y su energia. Finalmente se retorna el array generado.
+Particula *lecturaParticulas(char *NameFile, int *cantidad_Particulas)
 {
     int i;
-    int Cantidad_Particulas;
 
     FILE *particulasFile = fopen(NameFile, "r");
-    fscanf(particulasFile, "%d", &Cantidad_Particulas);
+    fscanf(particulasFile, "%d", cantidad_Particulas); // Obtenemos la cantidad de particulas presentes ene le archivo
 
-    Particulas *Array_Particulas = (Particulas *)malloc(sizeof(Particulas) * Cantidad_Particulas);
+    Particula *Array_Particulas = (Particula *)malloc(sizeof(Particula) * (*cantidad_Particulas)); // Reservamos memoria para guardar la informacion de todas las particulas
 
-    for (i = 0; i < Cantidad_Particulas; i++)
+    for (i = 0; i < *cantidad_Particulas; i++) // Recorremos el archivo, guardando las celdas de impacto y su energia en las estructuras Particulas
     {
-        Array_Particulas[i].c_Particulas = Cantidad_Particulas;
         fscanf(particulasFile, "%d %lf", &Array_Particulas[i].posicion, &Array_Particulas[i].energia);
     }
 
@@ -26,7 +25,7 @@ Particulas *Lectura_Particulas(char *NameFile)
 // Entradas:
 // Salidas:
 // Descripcion:
-double FormulaYComparacion(int celdas, double energia_Inicial, int posicion_Celda, double energia_Particula, int posicion_Particula)
+double formulaYComparacion(int celdas, double energia_Inicial, int posicion_Celda, double energia_Particula, int posicion_Particula)
 {
     double energia_Repartida;
     double min_energia;
@@ -48,7 +47,7 @@ double FormulaYComparacion(int celdas, double energia_Inicial, int posicion_Celd
 // Entradas:
 // Salidas:
 // Descripcion:
-void MostrarCeldas(double *array_Celdas, int cantidad_Celdas)
+void mostrarCeldas(double *array_Celdas, int cantidad_Celdas)
 {
     int i, j;
     for (i = 0; i < cantidad_Celdas; i++)
@@ -65,7 +64,7 @@ void MostrarCeldas(double *array_Celdas, int cantidad_Celdas)
 // Entradas:
 // Salidas:
 // Descripcion:
-void EscrituraArchivo(double *array_Celdas, int cantidad_Celdas, char *nombreArchivo)
+void escrituraArchivo(double *array_Celdas, int cantidad_Celdas, char *nombreArchivo)
 {
     FILE *archivo;
     archivo = fopen(nombreArchivo, "w");
@@ -86,7 +85,7 @@ void EscrituraArchivo(double *array_Celdas, int cantidad_Celdas, char *nombreArc
     fclose(archivo);
 }
 
-// Entradas:
+// Entradas: array_celdad
 // Salidas:
 // Descripcion:
 void MaxEnergiaCelda(double *array_Celdas, int cantidad_Celdas, double *MaxValor, int *posicionMaxValor)
