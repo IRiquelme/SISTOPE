@@ -39,14 +39,26 @@ int main(int argc, char *argv[])
             break;
         case 'i':
             strcpy(i, optarg);
-            // Falta completar
+            // Verificacion del archivo de entrada
+            FILE *fp = fopen(i, "r");
+            if (fp == NULL) // Verificamos que el archivo exista
+            {
+                printf("El archivo indicado en -i no existe.\n");
+                exit(0);
+            }
+
+            if (fgetc(fp) == EOF) // Verificamos que el archivo no este vacio
+            {
+                printf("El archivo indicado en -i está vacío.\n");
+                exit(0);
+            }
+            fclose(fp);
 
             obligatorio_i = 1;
             break;
         case 'o':
             strcpy(o, optarg);
-            // Falta completar
-
+            // Falta completar?
             obligatorio_o = 1;
             break;
         case 'D':
@@ -71,20 +83,6 @@ int main(int argc, char *argv[])
         printf("Se debe ingresar el valor del parametro -o\n");
         exit(0);
     }
-    // Verificacion del archivo de entrada
-    FILE *fp = fopen(i, "r");
-    if (fp == NULL) // Verificamos que el archivo exista
-    {
-        printf("El archivo indicado en -i no existe.\n");
-        exit(0);
-    }
-
-    if (fgetc(fp) == EOF) // Verificamos que el archivo no este vacio
-    {
-        printf("El archivo indicado en -i está vacío.\n");
-        exit(0);
-    }
-    fclose(fp);
 
     int cantidad_Particulas;
     Particula *Lista_Particulas = lecturaParticulas(i, &cantidad_Particulas);
