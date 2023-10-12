@@ -1,4 +1,4 @@
-FLAGS = -Wall -lm
+FLAGS = -Wall
 
 main: lab1.c funciones.o
 	gcc $(FLAGS) -o lab1 lab1.c funciones.o -lm
