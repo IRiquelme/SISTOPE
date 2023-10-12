@@ -7,4 +7,4 @@ funciones.o: funciones.c
 	gcc -c $(FLAGS) funciones.c
 
 clear:
-	rm -f lab1 *.o
+	rm -f lab1 *.o lab1
