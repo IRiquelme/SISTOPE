@@ -58,7 +58,6 @@ int main(int argc, char *argv[])
             break;
         case 'o':
             strcpy(o, optarg);
-            // Falta completar?
             obligatorio_o = 1;
             break;
         case 'D':
