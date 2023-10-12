@@ -1,9 +1,10 @@
 #include "funciones.h"
 
-// Entradas: Nombre del archivo de entrada
-// Salidas: Un array de estructuras "Particula", cada estructura contiene la celda de impacto y su energia.
-// Descripcion: Se lee el primer entero y se reserva memoria dimica para un array de estucturas "Particula" con un largo igual al leido.
-//                 Luego mediante un ciclo 'for' se recorre el archivo, guardando cada celda de impacto y su energia. Finalmente se retorna el array generado.
+// Entradas: Nombre del archivo de entrada (char *NameFile), Puntero a la cantidad de particulas (int *cantidad_Particulas)
+// Salidas: Un array de estructuras "Particula", cada estructura contiene la celda de impacto y su energía.
+// Descripción: Lee un archivo de entrada que contiene información sobre partículas,
+//              crea un array de estructuras Particula y lo llena con los datos del archivo.
+//              Devuelve el array generado y almacena la cantidad de partículas en la variable cantidad_Particulas (en el puntero proporcionado).
 Particula *lecturaParticulas(char *NameFile, int *cantidad_Particulas)
 {
     int i;
@@ -22,9 +23,12 @@ Particula *lecturaParticulas(char *NameFile, int *cantidad_Particulas)
     return Array_Particulas;
 }
 
-// Entradas:
-// Salidas:
-// Descripcion:
+// Entradas: Número de celdas (int celdas), Energía inicial (double energia_Inicial), Posición de la celda (int posicion_Celda),
+//           Energía de la partícula (double energia_Particula), Posición de la partícula (int posicion_Particula)
+// Salidas: Energía acumulada en la celda (double)
+// Descripción: Calcula la energía repartida en una celda dada de acuerdo a una fórmula específica.
+//              Compara la energía repartida con un umbral y, si es mayor, la suma a la energía inicial de la celda.
+//              Devuelve la energía acumulada en la celda.
 double formulaYComparacion(int celdas, double energia_Inicial, int posicion_Celda, double energia_Particula, int posicion_Particula)
 {
     double energia_Repartida;
@@ -44,9 +48,9 @@ double formulaYComparacion(int celdas, double energia_Inicial, int posicion_Celd
     }
 }
 
-// Entradas:
-// Salidas:
-// Descripcion:
+// Entradas: Array de celdas (double *array_Celdas), cantidad de celdas (int cantidad_Celdas)
+// Salidas: Ninguna
+// Descripción: Muestra información sobre las celdas y la energía acumulada en cada una en un formato de salida específico.
 void mostrarCeldas(double *array_Celdas, int cantidad_Celdas)
 {
     int i, j;
@@ -61,9 +65,9 @@ void mostrarCeldas(double *array_Celdas, int cantidad_Celdas)
     }
 }
 
-// Entradas:
-// Salidas:
-// Descripcion:
+// Entradas: Array de celdas (double *array_Celdas), cantidad de celdas (int cantidad_Celdas), nombre del archivo (char *nombreArchivo)
+// Salidas: Ninguna
+// Descripción: Escribe información sobre las celdas y la celda con la energía máxima en un archivo de salida.
 void escrituraArchivo(double *array_Celdas, int cantidad_Celdas, char *nombreArchivo)
 {
     FILE *archivo;
@@ -85,9 +89,9 @@ void escrituraArchivo(double *array_Celdas, int cantidad_Celdas, char *nombreArc
     fclose(archivo);
 }
 
-// Entradas: array_celdad
-// Salidas:
-// Descripcion:
+// Entradas: Array de celdas (double *array_Celdas), cantidad de celdas (int cantidad_Celdas), puntero al valor máximo (MaxValor), puntero a la posición del valor máximo (posicionMaxValor)
+// Salidas: Ninguna
+// Descripción: Encuentra la celda con la energía máxima y almacena el valor máximo en MaxValor y su posición en posicionMaxValor.
 void MaxEnergiaCelda(double *array_Celdas, int cantidad_Celdas, double *MaxValor, int *posicionMaxValor)
 {
     double max = array_Celdas[0];

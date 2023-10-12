@@ -84,9 +84,11 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
+    // Desde el archivo especificado en la flag -i obtenemos las cantidad de particulas y una lista de particulas
     int cantidad_Particulas;
     Particula *Lista_Particulas = lecturaParticulas(i, &cantidad_Particulas);
 
+    // Array que representa el material con el cual colisionaran las particulas
     double *Array_Celdas = (double *)calloc(N, sizeof(double)); // Inicializar el array con solo 0
 
     int k;
@@ -95,13 +97,16 @@ int main(int argc, char *argv[])
     {
         for (j = 0; j < N; j++)
         {
+            // Se actualiza la energia en las celdas del material por cada particula de la lista obtenida con anterioridad.
             Array_Celdas[j] = formulaYComparacion(N, Array_Celdas[j], j, Lista_Particulas[k].energia, Lista_Particulas[k].posicion);
         }
     }
+    // Registramos los resultados obtenidos en el archivo de salida especificado.
     escrituraArchivo(Array_Celdas, N, o);
 
     if (D)
     {
+        // En caso de que se agregue la flag -D, se mostrara por consola la energia final en cada celda del material
         mostrarCeldas(Array_Celdas, N);
     }
 
