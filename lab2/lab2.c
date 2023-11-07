@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <string.h>
+#include <sys/wait.h>
 #include "particula.h"
 
 int main(int argc, char *argv[])
@@ -20,7 +21,7 @@ int main(int argc, char *argv[])
     // Variables booleanas, si se mantienen en 0, es porque no fueron ingresadas por lo tanto pasan por un IF, donde verifican aquello
     int obligatorio_N, obligatorio_o, obligatorio_i = 0, obligatorio_P = 0;
 
-    while ((option = getopt(argc, argv, "N:i:o:D")) != -1)
+    while ((option = getopt(argc, argv, "N:P:i:o:D")) != -1)
     {
         switch (option)
         {
@@ -46,7 +47,7 @@ int main(int argc, char *argv[])
             }
             obligatorio_P = 1;
             break;
-            
+
         case 'i':
             strcpy(i, optarg);
             // Verificacion del archivo de entrada
@@ -102,7 +103,7 @@ int main(int argc, char *argv[])
 
     // CREAR BROKER
     // Se crea el broker, el cual se encargara de leer el archivo y enviar las particulas a los workers
-    pid_t pid_broker = fork();
+    int pid_broker = fork();
     if (pid_broker == 0)
     {
         char N_str[100];
@@ -111,7 +112,7 @@ int main(int argc, char *argv[])
         sprintf(N_str, "%d", N);
         sprintf(D_str, "%d", D);
         sprintf(P_str, "%d", P);
-        char args[] = {"./broker", N_str, D_str, P_str, i, o, NULL};
+        char *args[] = {"./broker", N_str, P_str, D_str, i, o, NULL};
         execv(args[0], args);
         exit(0);
     }
