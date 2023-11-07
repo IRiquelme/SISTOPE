@@ -117,5 +117,6 @@ int main(int argc, char *argv[])
         exit(0);
     }
     wait(NULL);
+    printf("SOY EL MAIN\n");
     return 0;
 }
