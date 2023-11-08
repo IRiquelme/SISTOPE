@@ -6,9 +6,21 @@
 
 int main(int argc, char const *argv[])
 {
-    // NADA IMPLEMENTADO, BOSQUEJO DE LO QUE DEBERIA HACER EL WORKER
-    char *lineas;
-    read(STDIN_FILENO, lineas, 100); // DEFINIR LA ESTRUCTURA A RECIBIR
-    // TRABAJAR CON LINEAS
+    char buffer[25];
+    int lineasRecibidas;
+    while (1)
+    {
+        if (read(STDIN_FILENO, buffer, size_of(buffer)) > 0)
+        {
+            lineasRecibidas++;
+        }
+    }
+
+    int pid = getpid();
+
+    char mensaje[100];
+    sprintf(mensaje, "Soy el worker %d y he recibido %d líneas del broker", pid, lineasRecibidas);
+    write(STDOUT_FILENO, mensaje, size_of(mensaje));
+
     return 0;
 }

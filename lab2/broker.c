@@ -4,6 +4,9 @@
 #include <string.h>
 #include "particula.h"
 
+#define PIPE_READ  0
+#define PIPE_WRITE 1
+
 int main(int argc, char *argv[])
 {
     int celdas = atoi(argv[1]);  //  numero de celdas
@@ -17,15 +20,15 @@ int main(int argc, char *argv[])
     char output[100]; //  o es el nombre del archivo de salida
     strcpy(output, argv[6]);
 
-    int fdBroker[workers][2]; // Matriz para los pipes con mensajes para el broker (Broker lee; Workers escriben)
-    int fdWorker[workers][2]; // Matriz para los pipes con mensajes para el worker (Worker lee; Broker escribe)
+    int fdWorkerToBroken[workers][2]; // Matriz para los pipes con mensajes para el broker (Broker lee; Workers escriben)
+    int fdBrokenToWorker[workers][2]; // Matriz para los pipes con mensajes para el worker (Worker lee; Broker escribe)
 
     int i;
 
     // Creacion de los pipes
     for (i = 0; i < workers; i++)
     {
-        if (pipe(fdBroker[i]) == -1 || pipe(fdWorker[i]) == -1)
+        if (pipe(fdWorkerToBroken[i]) == -1 || pipe(fdBrokenToWorker[i]) == -1)
         {
             printf("Error al crear un pipe");
             exit(0);
@@ -39,16 +42,16 @@ int main(int argc, char *argv[])
 
         if (pid == 0)
         {   // worker
-            close(fdBroker[i][0]); // Cerramos el pipe de lectura, ya que este pipe se usa para que el worker escriba y broker lea
-            close(fdWorker[i][1]); // Cerramos el pipe de escritura, ya que este pipe se usa para que el worker lea y broker escriba
-            dup2(fdBroker[i][1], STDOUT_FILENO); // Redireccionamos la salida estandar al pipe de escritura
-            dup2(fdWorker[i][0], STDIN_FILENO); // Redireccionamos la entrada estandar al pipe de lectura
+            close(fdWorkerToBroken[i][0]); // Cerramos el pipe de lectura, ya que este pipe se usa para que el worker escriba y broker lea
+            close(fdBrokenToWorker[i][1]); // Cerramos el pipe de escritura, ya que este pipe se usa para que el worker lea y broker escriba
+            dup2(fdWorkerToBroken[i][1], STDOUT_FILENO); // Redireccionamos la salida estandar al pipe de escritura
+            dup2(fdBrokenToWorker[i][0], STDIN_FILENO); // Redireccionamos la entrada estandar al pipe de lectura
             execv("./worker", NULL);    // Quizas hay que mandar el argumento 'chunks', para que el worker sepa con cuantas lineas trabajara (creacion de arreglo). Incluso tambien 'celdas'
         }
         else
         {   // broker
-            close(fdBroker[i][1]); // Cerramos el pipe de escritura, ya que este pipe se usa para que el broker lea y worker escriba
-            close(fdWorker[i][0]); // Cerramos el pipe de lectura, ya que este pipe se usa para que el broker escriba y worker lea
+            close(fdWorkerToBroken[i][1]); // Cerramos el pipe de escritura, ya que este pipe se usa para que el broker lea y worker escriba
+            close(fdBrokenToWorker[i][0]); // Cerramos el pipe de lectura, ya que este pipe se usa para que el broker escriba y worker lea
         }
     }
     
@@ -59,20 +62,39 @@ int main(int argc, char *argv[])
         exit(0);
     }
     int cantidadParticulas;
-    fscanf(archivoParticulas, "%d", cantidadParticulas);    // Cuando se la cantidad de lineas alcance o pase a la cantidad de particulas, se envia el mensaje 'FIN' a los workers
+    fscanf(archivoParticulas, "%d", cantidadParticulas);
     
-    // BOSQUEJO DE COMO SE LEERA EL ARCHIVO DE PARTICULAS Y SE ENVIARA A LOS WORKERS
     int lineasLeidas = 0;
-    char chunkLeido [chunks][50];
+    char buffer[25];
+    int workerRandom;
+    
+    // Cuando se la cantidad de lineas alcance o pase a la cantidad de particulas, se envia el mensaje 'FIN' a los workers
     while (lineasLeidas < cantidadParticulas)
     {
-        for (i = 0; i < chunks; i++)
+        if (lineasLeidas % chunks == 0) // cuando ya se han leido 'chunks' lineas, se cambia a otro worker de forma aleatoria
         {
-            fscanf(archivoParticulas, "%s", chunkLeido[i]);
-            lineasLeidas++;
+            workerRandom = rand() % workers;
         }
-        int workerRandom = rand() % workers;
-        write(fdWorker[workerRandom][1], chunkLeido, sizeof(chunkLeido));
+        fscanf(archivoParticulas, "%s", buffer);
+        lineasLeidas++;
+        write(fdBrokenToWorker[workerRandom][PIPE_WRITE], buffer, sizeof(buffer));
+    }
+
+    fclose(archivoParticulas);
+
+    for (i = 0; i < workers; i++)
+    {
+        write(fdBrokenToWorker[i][PIPE_WRITE], "FIN", sizeof("FIN"));
+    }
+
+    // Lectura de los resultados de los workers  (BOSQUEJO)
+    for (i = 0; i < workers; i++)
+    {
+        char buffer[25];
+        while (read(fdWorkerToBroken[i][PIPE_READ], buffer, sizeof(buffer)) > 0)
+        {
+            printf("%s\n", buffer);
+        }
     }
 
     return 0;
