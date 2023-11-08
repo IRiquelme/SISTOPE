@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     char o[100];
 
     // Variables booleanas, si se mantienen en 0, es porque no fueron ingresadas por lo tanto pasan por un IF, donde verifican aquello
-    int obligatorio_N, obligatorio_o, obligatorio_i = 0, obligatorio_P = 0, obligatorio_c = 0;
+    int obligatorio_N, obligatorio_o, obligatorio_i, obligatorio_P, obligatorio_c = 0;
 
     while ((option = getopt(argc, argv, "N:P:c:i:o:D")) != -1)
     {
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 
         case 'P':
             P = atoi(optarg);
-            // Valida si P es un numero, y si es mayor a uno. Debe existir al menos un worker que lea el archivo
+            // Valida si P es un numero, y si es al menos  uno. Debe existir al menos un worker que lea el archivo
             if (P < 1)
             {
                 printf("Porfavor ingrese un valor entero positivo y valido de workers, el cual corresponde al parametro -P");
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 
         case 'c':
             c = atoi(optarg);
-            // Valida si P es un numero, y si es mayor a uno. Debe existir al menos un worker que lea el archivo
+            // Valida si c es un numero, y si es al menos uno. La cantidad minima de lineas a leer debe ser uno
             if (c < 1)
             {
                 printf("Porfavor ingrese un valor entero positivo y valido de chunks, el cual corresponde al parametro -c");
@@ -129,6 +129,7 @@ int main(int argc, char *argv[])
         sprintf(N_str, "%d", N);
         sprintf(D_str, "%d", D);
         sprintf(P_str, "%d", P);
+        sprintf(c_srt, "%d", c);
         char *args[] = {"./broker", N_str, P_str, D_str, c_srt, i, o, NULL};
         execv(args[0], args);
         exit(0);
