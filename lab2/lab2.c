@@ -12,16 +12,16 @@ int main(int argc, char *argv[])
     int option;
 
     // Variables int
-    int N = 0, D = 0, P = 0;
+    int N = 0, D = 0, P = 0, c = 0;
 
     // Variable string
     char i[100];
     char o[100];
 
     // Variables booleanas, si se mantienen en 0, es porque no fueron ingresadas por lo tanto pasan por un IF, donde verifican aquello
-    int obligatorio_N, obligatorio_o, obligatorio_i = 0, obligatorio_P = 0;
+    int obligatorio_N, obligatorio_o, obligatorio_i = 0, obligatorio_P = 0, obligatorio_c = 0;
 
-    while ((option = getopt(argc, argv, "N:P:i:o:D")) != -1)
+    while ((option = getopt(argc, argv, "N:P:c:i:o:D")) != -1)
     {
         switch (option)
         {
@@ -46,6 +46,17 @@ int main(int argc, char *argv[])
                 exit(0);
             }
             obligatorio_P = 1;
+            break;
+
+        case 'c':
+            c = atoi(optarg);
+            // Valida si P es un numero, y si es mayor a uno. Debe existir al menos un worker que lea el archivo
+            if (c < 1)
+            {
+                printf("Porfavor ingrese un valor entero positivo y valido de chunks, el cual corresponde al parametro -c");
+                exit(0);
+            }
+            obligatorio_c = 1;
             break;
 
         case 'i':
@@ -100,6 +111,11 @@ int main(int argc, char *argv[])
         printf("Se debe ingresar el valor del parametro -P\n");
         exit(0);
     }
+    if (obligatorio_c == 0)
+    {
+        printf("Se debe ingresar el valor del parametro -c\n");
+        exit(0);
+    }
 
     // CREAR BROKER
     // Se crea el broker, el cual se encargara de leer el archivo y enviar las particulas a los workers
@@ -109,14 +125,14 @@ int main(int argc, char *argv[])
         char N_str[100];
         char D_str[100];
         char P_str[100];
+        char c_srt[100];
         sprintf(N_str, "%d", N);
         sprintf(D_str, "%d", D);
         sprintf(P_str, "%d", P);
-        char *args[] = {"./broker", N_str, P_str, D_str, i, o, NULL};
+        char *args[] = {"./broker", N_str, P_str, D_str, c_srt, i, o, NULL};
         execv(args[0], args);
         exit(0);
     }
     wait(NULL);
-    printf("SOY EL MAIN\n");
     return 0;
 }
