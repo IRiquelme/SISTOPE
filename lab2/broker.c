@@ -50,7 +50,8 @@ int main(int argc, char *argv[])
             close(fdBrokenToWorker[i][1]);               // Cerramos el pipe de escritura, ya que este pipe se usa para que el worker lea y broker escriba
             dup2(fdWorkerToBroken[i][1], STDOUT_FILENO); // Redireccionamos la salida estandar al pipe de escritura
             dup2(fdBrokenToWorker[i][0], STDIN_FILENO);  // Redireccionamos la entrada estandar al pipe de lectura
-            execv("./worker", NULL);                     // Quizas hay que mandar el argumento 'chunks', para que el worker sepa con cuantas lineas trabajara (creacion de arreglo). Incluso tambien 'celdas'
+            char args[] = {"./worker", argv[1], NULL};
+            execv(args[0], args);
         }
         else
         {                                  // broker
@@ -79,7 +80,6 @@ int main(int argc, char *argv[])
     {
         if ((lineasLeidas % chunks) == 0) // cuando ya se han leido 'chunks' lineas, se cambia a otro worker de forma aleatoria
         {
-            printf("llegue aqui\n");
             workerRandom = rand() % workers;
         }
         fscanf(archivoParticulas, "%s", buffer);
@@ -95,15 +95,23 @@ int main(int argc, char *argv[])
     }
 
     // Lectura de los resultados de los workers  (BOSQUEJO)
+    double *arregloCeldas = (double *)malloc(celdas * sizeof(double));
+    double *respuestaWorker = (double *)malloc((celdas + 1) * sizeof(double));
     for (i = 0; i < workers; i++)
     {
-        char buffer[25];
-        while (read(fdWorkerToBroken[i][PIPE_READ], buffer, sizeof(buffer)) > 0)
+        read(fdWorkerToBroken[i][PIPE_READ], respuestaWorker, sizeof(double) * (celdas + 1));
+        printf("Worker %d: %d lineas\n", i + 1, (int)respuestaWorker[0]);
+        int j;
+        for (j = 1; j <= celdas; j++)
         {
-            printf("%s\n", buffer);
+            arregloCeldas[j - 1] += respuestaWorker[j];
         }
     }
-
     wait(NULL);
+    for (i = 0; i < celdas; i++)
+    {
+        printf("%lf\n", arregloCeldas[i]);
+    }
+
     return 0;
 }
