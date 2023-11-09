@@ -46,8 +46,10 @@ int main(int argc, char *argv[])
         {                                                // worker
             close(fdWorkerToBroken[i][0]);               // Cerramos el pipe de lectura, ya que este pipe se usa para que el worker escriba y broker lea
             close(fdBrokenToWorker[i][1]);               // Cerramos el pipe de escritura, ya que este pipe se usa para que el worker lea y broker escriba
+
             dup2(fdWorkerToBroken[i][1], STDOUT_FILENO); // Redireccionamos la salida estandar al pipe de escritura
             dup2(fdBrokenToWorker[i][0], STDIN_FILENO);  // Redireccionamos la entrada estandar al pipe de lectura
+            
             char *args[] = {"./worker", argv[1], NULL};
             execv(args[0], args);
         }
@@ -101,6 +103,7 @@ int main(int argc, char *argv[])
         int lineasTrabajadas;
         read(fdWorkerToBroken[i][PIPE_READ], &lineasTrabajadas, sizeof(int));
         read(fdWorkerToBroken[i][PIPE_READ], archivoWorker, sizeof(archivoWorker));
+        printf("Worker %d: %d lineas trabajadas\n", i+1, lineasTrabajadas);
         FILE *fp = fopen(archivoWorker, "r");
         int j;
         for (j = 0; j < celdas; j++)
@@ -113,14 +116,18 @@ int main(int argc, char *argv[])
         remove(archivoWorker);
     }
 
+    int j;
     if (D)
     {
-        printf("\nRECORDAD IMPRIMIR RESULTADO EN CONSOLA\n");
-    }
-
-    for (i = 0; i < celdas; i++)
-    {
-        printf("%d) %lf\n", i, arregloCeldas[i]);
+        for (i = 0; i < celdas; i++)
+        {
+            printf("%d %lf |", i, arregloCeldas[i]);
+            for (j = 0; j < arregloCeldas[i] / 50; j++)
+            {
+                printf("o");
+            }
+            printf("\n");
+        }
     }
 
     free(arregloCeldas);

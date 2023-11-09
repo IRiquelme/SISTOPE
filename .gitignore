@@ -8,3 +8,6 @@
 .vscode/settings.json
 lab2/.vscode/c_cpp_properties.json
 lab2/.vscode/settings.json
+lab2/broker
+lab2/lab2
+lab2/worker
