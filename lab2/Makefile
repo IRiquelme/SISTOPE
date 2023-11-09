@@ -10,7 +10,7 @@ broker: broker.c
 	$(CC) $(CFLAGS) -o broker broker.c
 
 worker: worker.c
-	$(CC) $(CFLAGS) -o worker worker.c
+	$(CC) $(CFLAGS) -o worker worker.c -lm
 
 clean:
 	rm -f lab2 broker worker

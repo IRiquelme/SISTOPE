@@ -16,8 +16,6 @@ int main(int argc, char *argv[])
     int D = atoi(argv[3]);       //  D indica si se imprime por consola el resultado
     int chunks = atoi(argv[4]);  //  numero de chunks
 
-    printf("chunks: %d\n", chunks);
-
     char input[100]; //  i es el nombre del archivo de entrada
     strcpy(input, argv[5]);
 
@@ -50,7 +48,7 @@ int main(int argc, char *argv[])
             close(fdBrokenToWorker[i][1]);               // Cerramos el pipe de escritura, ya que este pipe se usa para que el worker lea y broker escriba
             dup2(fdWorkerToBroken[i][1], STDOUT_FILENO); // Redireccionamos la salida estandar al pipe de escritura
             dup2(fdBrokenToWorker[i][0], STDIN_FILENO);  // Redireccionamos la entrada estandar al pipe de lectura
-            char args[] = {"./worker", argv[1], NULL};
+            char *args[] = {"./worker", argv[1], NULL};
             execv(args[0], args);
         }
         else
@@ -71,7 +69,7 @@ int main(int argc, char *argv[])
     fscanf(archivoParticulas, "%d", &cantidadParticulas);
 
     int lineasLeidas = 0;
-    char buffer[25];
+    char buffer[50];
     int workerRandom;
     srand(time(NULL));
 
@@ -82,7 +80,7 @@ int main(int argc, char *argv[])
         {
             workerRandom = rand() % workers;
         }
-        fscanf(archivoParticulas, "%s", buffer);
+        fgets(buffer, sizeof(buffer), archivoParticulas);
         write(fdBrokenToWorker[workerRandom][PIPE_WRITE], buffer, sizeof(buffer));
         lineasLeidas++;
     }
@@ -96,21 +94,32 @@ int main(int argc, char *argv[])
 
     // Lectura de los resultados de los workers  (BOSQUEJO)
     double *arregloCeldas = (double *)malloc(celdas * sizeof(double));
+    for (i = 0; i < celdas; i++)
+    {
+        arregloCeldas[i] = 0;
+    }
+
     double *respuestaWorker = (double *)malloc((celdas + 1) * sizeof(double));
     for (i = 0; i < workers; i++)
     {
         read(fdWorkerToBroken[i][PIPE_READ], respuestaWorker, sizeof(double) * (celdas + 1));
+        printf("\n");
         printf("Worker %d: %d lineas\n", i + 1, (int)respuestaWorker[0]);
         int j;
-        for (j = 1; j <= celdas; j++)
+        for (j = 0; j < celdas; j++)
         {
-            arregloCeldas[j - 1] += respuestaWorker[j];
+            arregloCeldas[j] += respuestaWorker[j + 1];
+        }
+        for (j = 0; j < celdas; j++)
+        {
+            printf("%d %lf\n", j, respuestaWorker[j+1]);
         }
     }
     wait(NULL);
-    for (i = 0; i < celdas; i++)
+
+    if (D)
     {
-        printf("%lf\n", arregloCeldas[i]);
+        printf("IMPRIMIR RESULTADO EN CONSOLA\n");
     }
 
     return 0;

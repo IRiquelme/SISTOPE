@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <math.h>
 #include "particula.h"
 
 double formula(int celdas, double energiaInicial, int posicionCelda, double energiaParticula, int posicionParticula)
@@ -30,7 +31,7 @@ int main(int argc, char const *argv[])
     int tamañoArreglo = celdas + 1;
     double *arregloCeldas = (double *)malloc(tamañoArreglo * sizeof(double)); 
 
-    char buffer[25];
+    char buffer[50];
     int lineasTrabajadas = 0;
     int j;
     while (1)
@@ -42,10 +43,10 @@ int main(int argc, char const *argv[])
                 break;
             }
 
-            int energiaParticula;
             int posicionParticula;
+            double energiaParticula;
 
-            sscanf(buffer, "%d %lf", &energiaParticula, &posicionParticula);
+            sscanf(buffer, "%d %lf", &posicionParticula, &energiaParticula);
 
             for (j = 1; j <= celdas; j++){
             arregloCeldas[j] = formula(celdas, arregloCeldas[j], j, energiaParticula, posicionParticula);
