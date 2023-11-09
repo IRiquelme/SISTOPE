@@ -72,7 +72,6 @@ int main(int argc, char *argv[])
     char buffer[50];
     int workerRandom;
     srand(time(NULL));
-
     // Cuando se la cantidad de lineas alcance o pase a la cantidad de particulas, se envia el mensaje 'FIN' a los workers
     while (lineasLeidas < cantidadParticulas)
     {
@@ -94,33 +93,33 @@ int main(int argc, char *argv[])
 
     // Lectura de los resultados de los workers  (BOSQUEJO)
     double *arregloCeldas = (double *)malloc(celdas * sizeof(double));
-    for (i = 0; i < celdas; i++)
-    {
-        arregloCeldas[i] = 0;
-    }
-
-    double *respuestaWorker = (double *)malloc((celdas + 1) * sizeof(double));
+    double *respuestaWorker = (double *)malloc(celdas * sizeof(double));
     for (i = 0; i < workers; i++)
     {
-        read(fdWorkerToBroken[i][PIPE_READ], respuestaWorker, sizeof(double) * (celdas + 1));
-        printf("\n");
-        printf("Worker %d: %d lineas\n", i + 1, (int)respuestaWorker[0]);
+        int lineasTrabajadas;
+        read(fdWorkerToBroken[i][PIPE_READ], &lineasTrabajadas, sizeof(int));
+        read(fdWorkerToBroken[i][PIPE_READ], respuestaWorker, sizeof(double) * celdas);
+        printf("Worker %d: %d lineas\n", i + 1, lineasTrabajadas);
         int j;
         for (j = 0; j < celdas; j++)
         {
-            arregloCeldas[j] += respuestaWorker[j + 1];
-        }
-        for (j = 0; j < celdas; j++)
-        {
-            printf("%d %lf\n", j, respuestaWorker[j+1]);
+            arregloCeldas[j] += respuestaWorker[j];
         }
     }
-    wait(NULL);
+
+    printf("\n");
+    for (i = 0; i < celdas; i++)
+    {
+        printf("%d %f\n", i, arregloCeldas[i]);
+    }
 
     if (D)
     {
-        printf("IMPRIMIR RESULTADO EN CONSOLA\n");
+        printf("\nRECORDAD IMPRIMIR RESULTADO EN CONSOLA\n");
     }
 
+    wait(NULL);
+    free(arregloCeldas);
+    free(respuestaWorker);
     return 0;
 }

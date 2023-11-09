@@ -28,8 +28,7 @@ int main(int argc, char const *argv[])
 {
     int celdas = atoi(argv[1]);  //  numero de celdas
 
-    int tamañoArreglo = celdas + 1;
-    double *arregloCeldas = (double *)malloc(tamañoArreglo * sizeof(double)); 
+    double *arregloCeldas = (double *)malloc(celdas * sizeof(double)); 
 
     char buffer[50];
     int lineasTrabajadas = 0;
@@ -48,7 +47,7 @@ int main(int argc, char const *argv[])
 
             sscanf(buffer, "%d %lf", &posicionParticula, &energiaParticula);
 
-            for (j = 1; j <= celdas; j++){
+            for (j = 0; j < celdas; j++){
             arregloCeldas[j] = formula(celdas, arregloCeldas[j], j, energiaParticula, posicionParticula);
             }
 
@@ -56,8 +55,8 @@ int main(int argc, char const *argv[])
         }
     }
 
-    arregloCeldas[0] = (double) lineasTrabajadas;
-    write(STDOUT_FILENO, arregloCeldas, sizeof(double) * tamañoArreglo);
-
+    write(STDOUT_FILENO, &lineasTrabajadas, sizeof(int));
+    write(STDOUT_FILENO, arregloCeldas, sizeof(double) * celdas);
+    free(arregloCeldas);
     return 0;
 }
