@@ -24,9 +24,23 @@ double formula(int celdas, double energiaInicial, int posicionCelda, double ener
     }
 }
 
+void arrayToFile(double *arreglo, int celdas, char *fileName)
+{
+    FILE *fp = fopen(fileName, "a");
+    int i;
+    for (i = 0; i < celdas; i++)
+    {
+        fprintf(fp, "%lf\n", arreglo[i]);
+    }
+    fclose(fp);
+}
+
 int main(int argc, char const *argv[])
 {
-    int celdas = atoi(argv[1]);  //  numero de celdas
+    int celdas = atoi(argv[1]);
+    int pid = getpid();
+    char fileName[50];
+    sprintf(fileName, "worker%d.txt", pid);
 
     double *arregloCeldas = (double *)malloc(celdas * sizeof(double)); 
 
@@ -54,9 +68,15 @@ int main(int argc, char const *argv[])
             lineasTrabajadas++;
         }
     }
+    FILE *fp = fopen(fileName, "w");
+    for (j = 0; j < celdas; j++)
+    {
+        fprintf(fp, "%lf\n", arregloCeldas[j]);
+    }
 
+    arrayToFile(arregloCeldas, celdas, fileName);
     write(STDOUT_FILENO, &lineasTrabajadas, sizeof(int));
-    write(STDOUT_FILENO, arregloCeldas, sizeof(double) * celdas);
+    write(STDOUT_FILENO, fileName, sizeof(fileName));
     free(arregloCeldas);
     return 0;
 }

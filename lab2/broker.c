@@ -80,10 +80,9 @@ int main(int argc, char *argv[])
         {
             workerRandom = rand() % workers;
         }
-        fgets(buffer, sizeof(buffer), archivoParticulas);
-        printf("%s", buffer);
-        write(fdBrokenToWorker[workerRandom][PIPE_WRITE], buffer, sizeof(buffer));
         lineasLeidas++;
+        fgets(buffer, sizeof(buffer), archivoParticulas);
+        write(fdBrokenToWorker[workerRandom][PIPE_WRITE], buffer, sizeof(buffer));
     }
 
     fclose(archivoParticulas);
@@ -95,24 +94,23 @@ int main(int argc, char *argv[])
 
     // Lectura de los resultados de los workers  (BOSQUEJO)
     double *arregloCeldas = (double *)malloc(celdas * sizeof(double));
-    double *respuestaWorker = (double *)malloc(celdas * sizeof(double));
+    char archivoWorker[50];
+    wait(NULL);
     for (i = 0; i < workers; i++)
     {
         int lineasTrabajadas;
         read(fdWorkerToBroken[i][PIPE_READ], &lineasTrabajadas, sizeof(int));
-        read(fdWorkerToBroken[i][PIPE_READ], respuestaWorker, sizeof(double) * celdas);
-        printf("Worker %d: %d lineas\n", i + 1, lineasTrabajadas);
+        read(fdWorkerToBroken[i][PIPE_READ], archivoWorker, sizeof(archivoWorker));
+        FILE *fp = fopen(archivoWorker, "r");
         int j;
         for (j = 0; j < celdas; j++)
         {
-            arregloCeldas[j] += respuestaWorker[j];
+            double valor;
+            fscanf(fp, "%lf", &valor);
+            arregloCeldas[j] += valor;
         }
-    }
-
-    printf("\n");
-    for (i = 0; i < celdas; i++)
-    {
-        printf("%d %f\n", i, arregloCeldas[i]);
+        fclose(fp);
+        remove(archivoWorker);
     }
 
     if (D)
@@ -120,8 +118,11 @@ int main(int argc, char *argv[])
         printf("\nRECORDAD IMPRIMIR RESULTADO EN CONSOLA\n");
     }
 
-    wait(NULL);
+    for (i = 0; i < celdas; i++)
+    {
+        printf("%d) %lf\n", i, arregloCeldas[i]);
+    }
+
     free(arregloCeldas);
-    free(respuestaWorker);
     return 0;
 }
