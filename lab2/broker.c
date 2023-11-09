@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
     int workerRandom;
     srand(time(NULL));
     // Cuando se la cantidad de lineas alcance o pase a la cantidad de particulas, se envia el mensaje 'FIN' a los workers
+    fgets(buffer, sizeof(buffer), archivoParticulas);
     while (lineasLeidas < cantidadParticulas)
     {
         if ((lineasLeidas % chunks) == 0) // cuando ya se han leido 'chunks' lineas, se cambia a otro worker de forma aleatoria
@@ -80,6 +81,7 @@ int main(int argc, char *argv[])
             workerRandom = rand() % workers;
         }
         fgets(buffer, sizeof(buffer), archivoParticulas);
+        printf("%s", buffer);
         write(fdBrokenToWorker[workerRandom][PIPE_WRITE], buffer, sizeof(buffer));
         lineasLeidas++;
     }
