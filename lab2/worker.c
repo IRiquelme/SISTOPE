@@ -24,7 +24,7 @@ double formula(int celdas, double energiaInicial, int posicionCelda, double ener
     }
 }
 
-void arrayToFile(double *arreglo, int celdas, char *fileName)
+void generar_archivo_resultado(double *arreglo, int celdas, char *fileName)
 {
     FILE *fp = fopen(fileName, "a");
     int i;
@@ -74,7 +74,7 @@ int main(int argc, char const *argv[])
         fprintf(fp, "%lf\n", arregloCeldas[j]);
     }
 
-    arrayToFile(arregloCeldas, celdas, fileName);
+    generar_archivo_resultado(arregloCeldas, celdas, fileName);
     write(STDOUT_FILENO, &lineasTrabajadas, sizeof(int));
     write(STDOUT_FILENO, fileName, sizeof(fileName));
     free(arregloCeldas);

@@ -9,6 +9,171 @@
 #define PIPE_READ 0
 #define PIPE_WRITE 1
 
+void cerrar_pipes(int workers, int fdWorkerToBroken[][2], int fdBrokenToWorker[][2])
+{
+    int i;
+    for (i = 0; i < workers; i++)
+    {
+        close(fdWorkerToBroken[i][0]);
+        close(fdBrokenToWorker[i][1]);
+    }
+}
+
+void crear_pipes(int workers, int fdWorkerToBroken[][2], int fdBrokenToWorker[][2])
+{
+    int i;
+    for (i = 0; i < workers; i++)
+    {
+        if (pipe(fdWorkerToBroken[i]) == -1 || pipe(fdBrokenToWorker[i]) == -1)
+        {
+            printf("Error al crear un pipe\n");
+            exit(0);
+        }
+    }
+}
+
+void crear_workers(int workers, int fdWorkerToBroken[][2], int fdBrokenToWorker[][2], char *argv[])
+{
+    int i;
+    for (i = 0; i < workers; i++)
+    {
+        int pid = fork();
+
+        if (pid == 0)
+        {
+            close(fdWorkerToBroken[i][0]);
+            close(fdBrokenToWorker[i][1]);
+
+            dup2(fdWorkerToBroken[i][1], STDOUT_FILENO);
+            dup2(fdBrokenToWorker[i][0], STDIN_FILENO);
+
+            char *args[] = {"./worker", argv[1], NULL};
+            execv(args[0], args);
+        }
+        else
+        {
+            close(fdWorkerToBroken[i][1]);
+            close(fdBrokenToWorker[i][0]);
+        }
+    }
+}
+
+void procesar_respuesta_workers(int celdas, int workers, double *arregloCeldas, int fdWorkerToBroken[][2], int *lineasTrabajadasPorWorker)
+{
+    int i;
+    char archivoWorker[50];
+
+    for (i = 0; i < workers; i++)
+    {
+        int lineasTrabajadas;
+        read(fdWorkerToBroken[i][PIPE_READ], &lineasTrabajadas, sizeof(int));
+        lineasTrabajadasPorWorker[i] = lineasTrabajadas;
+
+        read(fdWorkerToBroken[i][PIPE_READ], archivoWorker, sizeof(archivoWorker));
+        FILE *fp = fopen(archivoWorker, "r");
+        int j;
+        for (j = 0; j < celdas; j++)
+        {
+            double valor;
+            fscanf(fp, "%lf", &valor);
+            arregloCeldas[j] += valor;
+        }
+        fclose(fp);
+        remove(archivoWorker);
+    }
+}
+
+void mostrar_resultado(int *lineasTrabajasPorWorker, double *arregloCeldas, int celdas, int workers)
+{
+    int i, j;
+    for (i = 0; i < workers; i++)
+    {
+        printf("Worker %d: %d lineas procesadas\n", i + 1, lineasTrabajasPorWorker[i]);
+    }
+
+    for (i = 0; i < celdas; i++)
+    {
+        printf("%d %lf |", i, arregloCeldas[i]);
+        for (j = 0; j < arregloCeldas[i] / 50; j++)
+        {
+            printf("o");
+        }
+        printf("\n");
+    }
+}
+
+void asignar_trabajo(const char *input, int chunks, int workers, int fdBrokenToWorker[][2])
+{
+    int cantidadParticulas, workerRandom, i;
+    int lineasLeidas = 0;
+    char buffer[50];
+
+    srand(time(NULL)); // Para variar la semilla del random en cada ejecucion
+
+    FILE *archivoParticulas = fopen(input, "r");
+    if (archivoParticulas == NULL)
+    {
+        printf("Error al abrir el archivo de entrada\n");
+        exit(0);
+    }
+
+    fscanf(archivoParticulas, "%d", &cantidadParticulas);
+
+    fgets(buffer, sizeof(buffer), archivoParticulas); // REVISAR ESTO
+
+    while (lineasLeidas < cantidadParticulas)
+    {
+        if ((lineasLeidas % chunks) == 0)
+        {
+            workerRandom = rand() % workers;
+        }
+        lineasLeidas++;
+        fgets(buffer, sizeof(buffer), archivoParticulas);
+        write(fdBrokenToWorker[workerRandom][PIPE_WRITE], buffer, sizeof(buffer));
+    }
+
+    fclose(archivoParticulas);
+
+    for (i = 0; i < workers; i++)
+    {
+        write(fdBrokenToWorker[i][PIPE_WRITE], "FIN", sizeof("FIN"));
+    }
+}
+
+int obtener_maximo(double *arregloCeldas, int celdas)
+{
+    int i;
+    int celdaEnergiaMaxima = 0;
+    for (i = 0; i < celdas; i++)
+    {
+        if (arregloCeldas[i] > arregloCeldas[celdaEnergiaMaxima])
+        {
+            celdaEnergiaMaxima = i;
+        }
+    }
+    return celdaEnergiaMaxima;
+}
+
+void crear_archivo_salida(double *arregloCeldas, int celdas, const char *output)
+{
+    FILE *archivoSalida = fopen(output, "w");
+    if (archivoSalida == NULL)
+    {
+        printf("Error al crear el archivo de salida\n");
+        exit(0);
+    }
+
+    int i;
+    int celdaEnergiaMaxima = obtener_maximo(arregloCeldas, celdas);
+    fprintf(archivoSalida, "%d %lf\n", celdaEnergiaMaxima, arregloCeldas[celdaEnergiaMaxima]);
+    for (i = 0; i < celdas; i++)
+    {
+        fprintf(archivoSalida, "%d %lf\n", i, arregloCeldas[i]);
+    }
+
+    fclose(archivoSalida);
+}
+
 int main(int argc, char *argv[])
 {
     int celdas = atoi(argv[1]);  //  numero de celdas
@@ -25,111 +190,29 @@ int main(int argc, char *argv[])
     int fdWorkerToBroken[workers][2]; // Matriz para los pipes con mensajes para el broker (Broker lee; Workers escriben)
     int fdBrokenToWorker[workers][2]; // Matriz para los pipes con mensajes para el worker (Worker lee; Broker escribe)
 
-    int i;
+    crear_pipes(workers, fdWorkerToBroken, fdBrokenToWorker);
 
-    // Creacion de los pipes
-    for (i = 0; i < workers; i++)
-    {
-        if (pipe(fdWorkerToBroken[i]) == -1 || pipe(fdBrokenToWorker[i]) == -1)
-        {
-            printf("Error al crear un pipe");
-            exit(0);
-        }
-    }
+    crear_workers(workers, fdWorkerToBroken, fdBrokenToWorker, argv);
 
-    // Creacion de los workers
-    for (i = 0; i < workers; i++)
-    {
-        int pid = fork();
+    asignar_trabajo(input, chunks, workers, fdBrokenToWorker);
 
-        if (pid == 0)
-        {                                                // worker
-            close(fdWorkerToBroken[i][0]);               // Cerramos el pipe de lectura, ya que este pipe se usa para que el worker escriba y broker lea
-            close(fdBrokenToWorker[i][1]);               // Cerramos el pipe de escritura, ya que este pipe se usa para que el worker lea y broker escriba
-
-            dup2(fdWorkerToBroken[i][1], STDOUT_FILENO); // Redireccionamos la salida estandar al pipe de escritura
-            dup2(fdBrokenToWorker[i][0], STDIN_FILENO);  // Redireccionamos la entrada estandar al pipe de lectura
-            
-            char *args[] = {"./worker", argv[1], NULL};
-            execv(args[0], args);
-        }
-        else
-        {                                  // broker
-            close(fdWorkerToBroken[i][1]); // Cerramos el pipe de escritura, ya que este pipe se usa para que el broker lea y worker escriba
-            close(fdBrokenToWorker[i][0]); // Cerramos el pipe de lectura, ya que este pipe se usa para que el broker escriba y worker lea
-        }
-    }
-
-    FILE *archivoParticulas = fopen(input, "r");
-    if (archivoParticulas == NULL)
-    {
-        printf("Error al abrir el archivo de entrada\n");
-        exit(0);
-    }
-
-    int cantidadParticulas;
-    fscanf(archivoParticulas, "%d", &cantidadParticulas);
-
-    int lineasLeidas = 0;
-    char buffer[50];
-    int workerRandom;
-    srand(time(NULL));
-    // Cuando se la cantidad de lineas alcance o pase a la cantidad de particulas, se envia el mensaje 'FIN' a los workers
-    fgets(buffer, sizeof(buffer), archivoParticulas);
-    while (lineasLeidas < cantidadParticulas)
-    {
-        if ((lineasLeidas % chunks) == 0) // cuando ya se han leido 'chunks' lineas, se cambia a otro worker de forma aleatoria
-        {
-            workerRandom = rand() % workers;
-        }
-        lineasLeidas++;
-        fgets(buffer, sizeof(buffer), archivoParticulas);
-        write(fdBrokenToWorker[workerRandom][PIPE_WRITE], buffer, sizeof(buffer));
-    }
-
-    fclose(archivoParticulas);
-
-    for (i = 0; i < workers; i++)
-    {
-        write(fdBrokenToWorker[i][PIPE_WRITE], "FIN", sizeof("FIN"));
-    }
-
-    // Lectura de los resultados de los workers  (BOSQUEJO)
-    double *arregloCeldas = (double *)malloc(celdas * sizeof(double));
-    char archivoWorker[50];
     wait(NULL);
-    for (i = 0; i < workers; i++)
-    {
-        int lineasTrabajadas;
-        read(fdWorkerToBroken[i][PIPE_READ], &lineasTrabajadas, sizeof(int));
-        read(fdWorkerToBroken[i][PIPE_READ], archivoWorker, sizeof(archivoWorker));
-        printf("Worker %d: %d lineas trabajadas\n", i+1, lineasTrabajadas);
-        FILE *fp = fopen(archivoWorker, "r");
-        int j;
-        for (j = 0; j < celdas; j++)
-        {
-            double valor;
-            fscanf(fp, "%lf", &valor);
-            arregloCeldas[j] += valor;
-        }
-        fclose(fp);
-        remove(archivoWorker);
-    }
 
-    int j;
+    double *arregloCeldas = (double *)malloc(celdas * sizeof(double));
+    int *lineasTrabajasPorWorker = (int *)malloc(workers * sizeof(int));
+
+    procesar_respuesta_workers(celdas, workers, arregloCeldas, fdWorkerToBroken, lineasTrabajasPorWorker);
+
+    cerrar_pipes(workers, fdWorkerToBroken, fdBrokenToWorker);
+
+    crear_archivo_salida(arregloCeldas, celdas, output);
+
     if (D)
     {
-        for (i = 0; i < celdas; i++)
-        {
-            printf("%d %lf |", i, arregloCeldas[i]);
-            for (j = 0; j < arregloCeldas[i] / 50; j++)
-            {
-                printf("o");
-            }
-            printf("\n");
-        }
+        mostrar_resultado(lineasTrabajasPorWorker, arregloCeldas, celdas, workers);
     }
 
     free(arregloCeldas);
+    free(lineasTrabajasPorWorker);
     return 0;
 }
