@@ -1,5 +1,6 @@
-#ifndef FWORKER_H
-#define FWORKER_H
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 // Entradas: Número de celdas (int celdas), Energía inicial (double energia_Inicial), Posición de la celda (int posicion_Celda),
 //           Energía de la partícula (double energia_Particula), Posición de la partícula (int posicion_Particula)
@@ -13,5 +14,3 @@ double formula(int celdas, double energiaInicial, int posicionCelda, double ener
 //Salida: Ninguna
 //Descripcion: Genera un archivo, en donde se escribe información sobre las celdas y la celda con la energía máxima en un archivo de salida.
 void generar_archivo_resultado(double *arreglo, int celdas, char *fileName);
-
-#endif

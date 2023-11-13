@@ -3,8 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
-#include "particula.h"
-#include "fbroker.c"
+#include "fbroker.h"
 #include <time.h>
 
 #define PIPE_READ 0

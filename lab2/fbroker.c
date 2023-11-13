@@ -1,7 +1,4 @@
 #include "fbroker.h"
-#include <time.h>
-#define PIPE_READ 0
-#define PIPE_WRITE 1
 
 //Entradas: Número de workers (int workers), arreglos de pipes de worker a broken (int fdWorkerToBroken[][2]) y de broken a worker (int fdBrokenToWorker[][2])
 //Salida: Ninguna

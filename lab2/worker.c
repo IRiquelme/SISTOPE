@@ -3,8 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
-#include "particula.h"
-#include "fworker.c"
+#include "fworker.h"
 
 int main(int argc, char const *argv[])
 {

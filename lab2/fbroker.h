@@ -1,5 +1,10 @@
-#ifndef FBROKER_H
-#define FBROKER_H
+#include <time.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define PIPE_READ 0
+#define PIPE_WRITE 1
 
 //Entradas: Número de workers (int workers), arreglos de pipes de worker a broken (int fdWorkerToBroken[][2]) y de broken a worker (int fdBrokenToWorker[][2])
 //Salida: Ninguna
@@ -57,5 +62,3 @@ int obtener_maximo(double *arregloCeldas, int celdas);
 //Descripción: Crea un archivo de salida con el nombre proporcionado. 
 //             Escribe en el archivo la información sobre la celda con la máxima energía y los valores de energía de todas las celdas.
 void crear_archivo_salida(double *arregloCeldas, int celdas, const char *output);
-
-#endif

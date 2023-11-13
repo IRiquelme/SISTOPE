@@ -1,16 +1,21 @@
-CC = gcc
-CFLAGS = -Wall -g
+FLAGS = -Wall -g
 
 all: lab2 broker worker
 
 lab2: lab2.c
-	$(CC) $(CFLAGS) -o lab2 lab2.c
+	$(CC) $(FLAGS) -o lab2 lab2.c
 
-broker: broker.c
-	$(CC) $(CFLAGS) -o broker broker.c
+broker: broker.c fbroker.o
+	$(CC) $(FLAGS) -o broker broker.c fbroker.o
 
-worker: worker.c
-	$(CC) $(CFLAGS) -o worker worker.c -lm
+fbroker.o: fbroker.c
+	$(CC) -c $(FLAGS) fbroker.c
 
-clean:
-	rm -f lab2 broker worker
+worker: worker.c fworker.o
+	$(CC) $(FLAGS) -o worker worker.c fworker.o -lm
+
+fworker.o: fworker.c
+	$(CC) -c $(FLAGS) fworker.c
+
+clear:
+	rm -f lab2 broker worker *.o
