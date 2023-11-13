@@ -1,5 +1,7 @@
 FLAGS = -Wall -g
 
+all: broker worker lab2
+
 lab2: lab2.c
 	gcc $(FLAGS) -o lab2 lab2.c
 
