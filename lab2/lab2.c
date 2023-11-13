@@ -4,7 +4,6 @@
 #include <ctype.h>
 #include <string.h>
 #include <sys/wait.h>
-#include "particula.h"
 
 int main(int argc, char *argv[])
 {
